@@ -1,0 +1,146 @@
+/* app/globals.css — InvestIQ design system */
+/* Premium dark-mode dashboard styling with neon accents and high contrast */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Premium Dark Palette */
+  --bg-base: #0a0b0d;        /* Deepest dark gray background */
+  --bg-sidebar: #0f1115;     /* Sleek dark sidebar */
+  --bg-surface: #14171d;     /* Primary surface cards */
+  --bg-card: #191d24;        /* Inner card background */
+  --bg-card-hover: #212630;  /* Card hover state */
+  --bg-input: #0b0c0f;       /* Dark contrast input fields */
+
+  /* Neon Accents & Gradients */
+  --accent-coral: #ff5224;   /* Main orange/coral accent from Dribbble */
+  --accent-coral-glow: rgba(255, 82, 36, 0.15);
+  --accent-lime: #00ff88;    /* Neon lime/emerald green */
+  --accent-lime-glow: rgba(0, 255, 136, 0.15);
+  
+  /* Signal Colors */
+  --signal-invest: #00ff88;  /* Emerald for Invest */
+  --signal-pass: #ff3838;    /* Neon red for Pass */
+  --signal-neutral: #9ea9bb;
+  --signal-warning: #ffd13b; /* Warm yellow */
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-active: rgba(255, 255, 255, 0.12);
+  --border-glow: rgba(255, 82, 36, 0.25);
+
+  /* Typography Colors */
+  --text-primary: #f0f2f5;
+  --text-secondary: #9ea9bb;
+  --text-muted: #576275;
+
+  /* Font Families */
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Border Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+html, body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-active);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Ambient glow backgrounds */
+.ambient-glow-coral {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 82, 36, 0.12) 0%, rgba(255, 82, 36, 0) 70%);
+  pointer-events: none;
+  filter: blur(40px);
+  z-index: 0;
+}
+
+.ambient-glow-lime {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.08) 0%, rgba(0, 255, 136, 0) 70%);
+  pointer-events: none;
+  filter: blur(40px);
+  z-index: 0;
+}
+
+/* Glassmorphism glass cards */
+.glass-card {
+  background: rgba(25, 29, 36, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--border-active);
+}
+
+/* Custom interactive animation keys */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom list resets */
+ul, ol {
+  list-style: none;
+}
