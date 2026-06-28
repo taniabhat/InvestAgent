@@ -472,49 +472,49 @@ export default function ReportPanel({ report }: Props) {
             Decision Confidence Gauge
           </h3>
 
-          <div style={{ position: 'relative', width: 200, height: 120, display: 'flex', justifyContent: 'center' }}>
-            <svg width="180" height="120" viewBox="0 0 120 80">
+          <div style={{ position: 'relative', width: 220, height: 180, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* SVG Gauge — arc sits in the top portion */}
+            <svg width="200" height="110" viewBox="0 0 140 80" style={{ flexShrink: 0 }}>
               {/* Semicircle track bg */}
               <path
-                d="M 20,70 A 40,40 0 0,1 100,70"
+                d="M 15,65 A 55,55 0 0,1 125,65"
                 fill="none"
                 stroke="rgba(255, 255, 255, 0.04)"
-                strokeWidth="7"
+                strokeWidth="8"
                 strokeLinecap="round"
               />
               
               {/* Semicircle track indicator fill */}
               <path
-                d="M 20,70 A 40,40 0 0,1 100,70"
+                d="M 15,65 A 55,55 0 0,1 125,65"
                 fill="none"
                 stroke={verdictColor}
-                strokeWidth="7.5"
+                strokeWidth="8.5"
                 strokeLinecap="round"
-                strokeDasharray="125.66"
-                strokeDashoffset={125.66 - (125.66 * (report.confidence / 100))}
+                strokeDasharray="172.79"
+                strokeDashoffset={172.79 - (172.79 * (report.confidence / 100))}
                 style={{
                   transition: 'stroke-dashoffset 1s ease-out',
-                  filter: `drop-shadow(0 2px 6px ${verdictBg})`
+                  filter: `drop-shadow(0 2px 8px ${verdictBg})`
                 }}
               />
             </svg>
 
-            {/* Text details in middle of gauge */}
+            {/* Text details — sits below the arc, no overlap */}
             <div style={{
-              position: 'absolute',
-              bottom: 12,
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              marginTop: -16,
             }}>
-              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 AI Recommendation
               </span>
-              <span style={{ fontSize: 32, fontWeight: 900, color: verdictColor, fontFamily: 'var(--font-mono)', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+              <span style={{ fontSize: 30, fontWeight: 900, color: verdictColor, fontFamily: 'var(--font-mono)', lineHeight: 1.2, letterSpacing: '-0.02em', marginTop: 2 }}>
                 {report.decision}
               </span>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
                 {report.confidence}% confidence
               </span>
             </div>

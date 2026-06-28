@@ -207,15 +207,20 @@ COMPANY DATA:
 - Analyst Target Price: {analystTarget}
 - Current Price: {currentPrice} (Change: {changePercent}%)
 
+HISTORICAL FINANCIAL TREND (5-Year):
+{historicalTrend}
+
 Business Description:
 {description}
 
 Provide a concise fundamental analysis covering:
 1. Valuation (cheap/fair/expensive based on sector peers)
 2. Profitability quality
-3. Growth trajectory
+3. Growth trajectory — CRITICALLY assess whether revenue or net income are declining, stalling, or accelerating based on the historical trend data above. If the trend is declining or flattening, explicitly flag this.
 4. Balance sheet health
 5. Overall fundamental signal (Bullish/Bearish/Neutral)
+
+IMPORTANT: Weight the historical trend heavily. A company with declining or stagnating revenue/income should NOT receive a bullish growth signal regardless of other metrics.
 
 Be specific, data-driven, and concise (200-300 words).
 `);
@@ -245,6 +250,9 @@ FUNDAMENTAL ANALYSIS:
 SENTIMENT ANALYSIS:
 {sentimentAnalysis}
 
+HISTORICAL FINANCIAL TREND (5-Year):
+{historicalTrend}
+
 KEY METRICS SUMMARY:
 - Decision Framework: Value + Growth + Sentiment composite
 - P/E: {peRatio} | PEG: {pegRatio} | P/B: {priceToBook}
@@ -253,6 +261,12 @@ KEY METRICS SUMMARY:
 - Debt/Equity: {debtToEquity}
 - Price vs Analyst Target: {currentPrice} vs {analystTarget}
 - Sector: {sector}
+
+CRITICAL DECISION RULES:
+- If the historical trend shows DECLINING revenue or net income over recent years, this is a major bearish signal. Factor this heavily.
+- If revenue has stalled or net income has dropped, the decision should lean toward PASS unless there are very strong offsetting factors.
+- The confidence level must reflect the overall consistency of signals. Contradictory signals (e.g. good valuation but declining financials) should result in LOWER confidence.
+- Ensure your decision is CONSISTENT with the data trends shown above. Do not recommend INVEST with high confidence if key financial metrics are deteriorating.
 
 Provide your investment decision in this EXACT JSON format (no markdown, no extra text):
 {{
@@ -275,7 +289,7 @@ Provide your investment decision in this EXACT JSON format (no markdown, no extr
   }}
 }}
 
-Include at least 4 steps covering: Valuation, Profitability, Growth, Risk/Debt, and Market Sentiment.
+Include at least 5 steps covering: Valuation, Profitability, Growth Trajectory, Risk/Debt, and Market Sentiment. The Growth Trajectory step MUST reference the historical trend data.
 `);
 
 // ── Helper: format market cap ──────────────────────────────────────────────
@@ -425,6 +439,28 @@ export async function runInvestmentAgent(companyInput: string, settings?: any): 
   const llm = getLLM(settings);
   const parser = new StringOutputParser();
 
+  // Pre-compute historical financials so we can feed the trend into the LLM
+  const historicalFinancials = getHistoricalFinancials(symbol, overview);
+
+  // Format historical trend as a readable summary for the LLM
+  const historicalTrend = historicalFinancials.map((f, i, arr) => {
+    let trend = '';
+    if (i > 0) {
+      const revChange = ((f.revenue - arr[i - 1].revenue) / arr[i - 1].revenue * 100).toFixed(1);
+      const niChange = ((f.netIncome - arr[i - 1].netIncome) / arr[i - 1].netIncome * 100).toFixed(1);
+      trend = ` (Revenue YoY: ${parseFloat(revChange) >= 0 ? '+' : ''}${revChange}%, Net Income YoY: ${parseFloat(niChange) >= 0 ? '+' : ''}${niChange}%)`;
+    }
+    return `${f.year}: Revenue $${f.revenue.toFixed(1)}B, Net Income $${f.netIncome.toFixed(1)}B${trend}`;
+  }).join('\n');
+
+  // Compute overall trend direction
+  const latestRev = historicalFinancials[historicalFinancials.length - 1]?.revenue || 0;
+  const prevRev = historicalFinancials[historicalFinancials.length - 2]?.revenue || 0;
+  const latestNI = historicalFinancials[historicalFinancials.length - 1]?.netIncome || 0;
+  const prevNI = historicalFinancials[historicalFinancials.length - 2]?.netIncome || 0;
+  const trendSummary = `\nTREND ASSESSMENT: Revenue ${latestRev >= prevRev ? (latestRev > prevRev * 1.02 ? 'GROWING' : 'FLAT/STAGNATING') : 'DECLINING'}, Net Income ${latestNI >= prevNI ? (latestNI > prevNI * 1.02 ? 'GROWING' : 'FLAT/STAGNATING') : 'DECLINING'}`;
+  const fullHistoricalTrend = historicalTrend + trendSummary;
+
   // Step A: Fundamental analysis
   const fundamentalChain = RunnableSequence.from([FUNDAMENTALS_PROMPT, llm, parser]);
   const fundamentalAnalysis = await fundamentalChain.invoke({
@@ -448,6 +484,7 @@ export async function runInvestmentAgent(companyInput: string, settings?: any): 
     currentPrice: price.currentPrice.toString(),
     changePercent: price.changePercent.toString(),
     description: overview.description?.slice(0, 600) || 'N/A',
+    historicalTrend: fullHistoricalTrend,
   });
 
   // Step B: Sentiment analysis
@@ -465,6 +502,7 @@ export async function runInvestmentAgent(companyInput: string, settings?: any): 
     symbol,
     fundamentalAnalysis,
     sentimentAnalysis,
+    historicalTrend: fullHistoricalTrend,
     peRatio: overview.peRatio,
     pegRatio: overview.pegRatio,
     priceToBook: overview.priceToBook,
@@ -514,7 +552,7 @@ export async function runInvestmentAgent(companyInput: string, settings?: any): 
     sources,
     dataMode,
     generatedAt: new Date().toISOString(),
-    historicalFinancials: getHistoricalFinancials(symbol, overview),
+    historicalFinancials,
     currentPrice: price.currentPrice,
     changePercent: price.changePercent,
   };
